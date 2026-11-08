@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz Bahasa Prancis: Les Nationalités (Persona 3 Style)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Courier+Prime:wght@700&display=swap');
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Montserrat', sans-serif;
+            background-color: #0c1017;
+            color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 750px;
+            background: #111827;
+            border: 4px solid #1ed760;
+            padding: 30px;
+            box-shadow: 8px 8px 0px #1ed760;
+            position: relative;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Persona 3 Stylized Header */
+        .p3-header {
+            background: #1ed760;
+            color: #0c1017;
+            padding: 12px 20px;
+            font-weight: 900;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transform: skew(-10deg);
+            margin-bottom: 20px;
+            box-shadow: 4px 4px 0px #ffffff;
+        }
+
+        .p3-sub-header {
+            background: #ffffff;
+            color: #0c1017;
+            padding: 5px 12px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: inline-block;
+            transform: skew(-5deg);
+            margin-bottom: 15px;
+        }
+
+        .question-box {
+            background: #151b26;
+            border: 2px solid #3a4b66;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .question-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .flag-icon {
+            font-size: 1.8rem;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: #1c2536;
+            border: 2px solid #3a4b66;
+            padding: 12px 18px;
+            font-size: 1rem;
+            color: #e2e8f0;
+            font-weight: bold;
+            text-align: left;
+            cursor: pointer;
+            transform: skew(-3deg);
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover {
+            background: #283548;
+            border-color: #1ed760;
+        }
+
+        .option-btn.selected {
+            background: #1ed760;
+            color: #0c1017;
+            border-color: #ffffff;
+        }
+
+        .option-btn.correct {
+            background: #22c55e !important;
+            color: #0c1017 !important;
+            border-color: #ffffff !important;
+        }
+
+        .option-btn.incorrect {
+            background: #ef4444 !important;
+            color: #ffffff !important;
+        }
+
+        .feedback-msg {
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 1rem;
+            min-height: 24px;
+        }
+
+        /* Auto-Reveal Answer Section */
+        .auto-reveal-answer {
+            display: none;
+            margin-top: 15px;
+            background: #0c1017;
+            border: 2px dashed #1ed760;
+            padding: 12px;
+            font-size: 0.95rem;
+            color: #1ed760;
+            font-family: 'Courier Prime', monospace;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Navigation Controls */
+        .nav-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .nav-btn {
+            background: #1ed760;
+            color: #0c1017;
+            border: none;
+            padding: 10px 20px;
+            font-weight: 900;
+            font-size: 0.95rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            transform: skew(-5deg);
+            box-shadow: 3px 3px 0px #ffffff;
+        }
+
+        .nav-btn:hover {
+            background: #17b34f;
+        }
+
+        .nav-btn:disabled {
+            background: #374151;
+            color: #9ca3af;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .page-counter {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.9rem;
+            color: #1ed760;
+        }
+
+        /* Cover & Score Page Styling */
+        .cover-container {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .cover-title {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #1ed760;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transform: skew(-10deg);
+            margin-bottom: 15px;
+            text-shadow: 3px 3px 0px #ffffff;
+        }
+
+        .cover-subtitle {
+            font-size: 1rem;
+            color: #cbd5e1;
+            background: #151b26;
+            display: inline-block;
+            padding: 8px 20px;
+            border: 2px solid #1ed760;
+            transform: skew(-5deg);
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- PAGE 0: COVER -->
+    <div class="page active" id="page-0">
+        <div class="cover-container">
+            <div class="cover-subtitle">LES NATIONALITÉS - EXERCICES A1</div>
+            <div class="cover-title">BAHASA PRANCIS<br>SPECIAL QUIZ</div>
+            <p style="color: #94a3b8; font-size: 0.95rem; margin-bottom: 30px;">
+                Sistem Evaluasi Mandiri Berdasarkan Materi Hal. 6<br>
+                Tema Visual: <i>Midnight Hour / Persona 3 Style</i>
+            </p>
+            <button class="nav-btn" onclick="changePage(1)">Mulai Kuis ➔</button>
+        </div>
+    </div>
+
+    <!-- Soal 1 -->
+    <div class="page" id="page-1" data-answer="japonais">
+        <div class="p3-header">Latihan Bagian A — Soal 01</div>
+        <div class="p3-sub-header">The Dark Hour Challenge</div>
+        <div class="question-box">
+            <div class="question-title"><span class="flag-icon">🇯🇵</span> 1. Kenji est du Japon. Il est...</div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOpt(this, 'japonaises')">A. japonaises</button>
+                <button class="option-btn" onclick="selectOpt(this, 'japonais')">B. japonais</button>
+                <button class="option-btn" onclick="selectOpt(this, 'japonais')">C. japonaise</button>
+                <button class="option-btn" onclick="selectOpt(this, 'japonais')">D. japon</button>
+            </div>
+            <div class="feedback-msg"></div>
+            <div class="auto-reveal-answer"><strong>Kunci Jawaban & Pembahasan:</strong> japonais (Maskulin tunggal, merujuk pada Kenji [laki-laki]).</div>
+        </div>
+    </div>
+
+    <!-- Soal 2 -->
+    <div class="page" id="page-2" data-answer="mexicaine">
+        <div class="p3-header">Latihan Bagian A — Soal 02</div>
+        <div class="p3-sub-header">The Dark Hour Challenge</div>
+        <div class="question-box">
+            <div class="question-title"><span class="flag-icon">🇲🇽</span> 2. María est du Mexique. Elle est...</div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOpt(this, 'mexicain')">A. mexicain</button>
+                <button class="option-btn" onclick="selectOpt(this, 'mexicains')">B. mexicains</button>
+                <button class="option-btn" onclick="selectOpt(this, 'mexicaine')">C. mexicaine</button>
+                <button class="option-btn" onclick="selectOpt(this, 'mexiques')">D. mexiques</button>
+            </div>
+            <div class="feedback-msg"></div>
+            <div class="auto-reveal-answer"><strong>Kunci Jawaban & Pembahasan:</strong> mexicaine (Féminin tunggal, merujuk pada María [perempuan]).</div>
+        </div>
+    </div>
+
+    <!-- Soal 3 -->
+    <div class="page" id="page-3" data-answer="allemand">
+        <div class="p3-header">Latihan Bagian A — Soal 03</div>
+        <div class="p3-sub-header">The Dark Hour Challenge</div>
+        <div class="question-box">
+            <div class="question-title"><span class="flag-icon">🇩🇪</span> 3. Hans vient d'Allemagne. Il est...</div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOpt(this, 'allemande')">A. allemande</button>
+                <button class="option-btn" onclick="selectOpt(this, 'allemand')">B. allemand</button>
+                <button class="option-btn" onclick="selectOpt(this, 'allemands')">C. allemands</button>
+                <button class="option-btn" onclick="selectOpt(this, 'allemandes')">D. allemandes</button>
+            </div>
+            <div class="feedback-msg"></div>
+            <div class="auto-reveal-answer"><strong>Kunci Jawaban & Pembahasan:</strong> allemand (Maskulin tunggal, merujuk pada Hans [laki-laki]).</div>
+        </div>
+    </div>
+
+    <!-- Soal 4 -->
+    <div class="page" id="page-4" data-answer="marocaine">
+        <div class="p3-header">Latihan Bagian A — Soal 04</div>
+        <div class="p3-sub-header">The Dark Hour Challenge</div>
+        <div class="question-box">
+            <div class="question-title"><span class="flag-icon">🇲🇦</span> 4. Fatima habite au Maroc. Elle est...</div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOpt(this, 'marocain')">A. marocain</button>
+                <button class="option-btn" onclick="selectOpt(this, 'marocaines')">B. marocaines</button>
+                <button class="option-btn" onclick="selectOpt(this, 'marocaine')">C. marocaine</button>
+                <button class="option-btn" onclick="selectOpt(this, 'marocs')">D. marocs</button>
+            </div>
+            <div class="feedback-msg"></div>
+            <div class="auto-reveal-answer"><strong>Kunci Jawaban & Pembahasan:</strong> marocaine (Féminin tunggal, merujuk pada Fatima [perempuan]).</div>
+        </div>
+    </div>
+
+    <!-- Soal 5 -->
+    <div class="page" id="page-5" data-answer="belge">
+        <div class="p3-header">Latihan Bagian A — Soal 05</div>
+        <div class="p3-sub-header">The Dark Hour Challenge</div>
+        <div class="question-box">
+            <div class="question-title"><span class="flag-icon">🇧🇪</span> 5. Sophie vient de Belgique. Elle est...</div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOpt(this, 'belges')">A. belges</button>
+                <button class="option-btn" onclick="selectOpt(this, 'belgique')">B. belgique</button>
+                <button class="option-btn" onclick="selectOpt(this, 'belgian')">C. belgian</button>
+                <button class="option-btn" onclick="selectOpt(this, 'belge')">D. belge</button>
+            </div>
+            <div class="feedback-msg"></div>
+            <div class="auto-reveal-answer"><strong>Kunci Jawaban & Pembahasan:</strong> belge (Bentuk sama untuk maskulin & feminin karena berakhiran -e).</div>
+        </div>
+    </div>
+
+    <!-- Soal 6 -->
+    <div class="page" id="page-6" data-answer="chinois">
+        <div class="p3-header">Latihan Bagian A — Soal 06</div>
+        <div class="p3-sub-header">The Dark Hour Challenge</div>
+        <div class="question-box">
+            <div class="question-title"><span class="flag-icon">🇨🇳</span> 6. Li Wei est de Chine. Il est...</div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOpt(this, 'chinoise')">A. chinoise</button>
+                <button class="option-btn" onclick="selectOpt(this, 'chinois')">B. chinois</button>
+                <button class="option-btn" onclick="selectOpt(this, 'chines')">C. chines</button>
+                <button class="option-btn" onclick="selectOpt(this, 'chinoises')">D. chinoises</button>
+            </div>
+            <div class="feedback-msg"></div>
+            <div class="auto-reveal-answer"><strong>Kunci Jawaban & Pembahasan:</strong> chinois (Maskulin tunggal, merujuk pada Li Wei [laki-laki]).</div>
+        </div>
+    </div>
+
+    <!-- Soal 7 -->
+    <div class="page" id="page-7" data-answer="argentin">
+        <div class="p3-header">Latihan Bagian A — Soal 07</div>
+        <div class="p3-sub-header">The Dark Hour Challenge</div>
+        <div class="question-box">
+            <div class="question-title"><span class="flag-icon">🇦🇷</span> 7. Carlos est d'Argentine. Il est...</div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOpt(this, 'argentine')">A. argentine</button>
+                <button class="option-btn" onclick="selectOpt(this, 'argentins')">B. argentins</button>
+                <button class="option-btn" onclick="selectOpt(this, 'argentin')">C. argentin</button>
+                <button class="option-btn" onclick="selectOpt(this, 'argentines')">D. argentines</button>
+            </div>
+            <div class="feedback-msg"></div>
+            <div class="auto-reveal-answer"><strong>Kunci Jawaban & Pembahasan:</strong> argentin (Maskulin tunggal, merujuk pada Carlos [laki-laki]).</div>
+        </div>
+    </div>
+
+    <!-- Soal 8 -->
+    <div class="page" id="page-8" data-answer="italienne">
+        <div class="p3-header">Latihan Bagian A — Soal 08</div>
+        <div class="p3-sub-header">The Dark Hour Challenge</div>
+        <div class="question-box">
+            <div class="question-title"><span class="flag-icon">🇮🇹</span> 8. Anna est d'Italie. Elle est...</div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOpt(this, 'italien')">A. italien</button>
+                <button class="option-btn" onclick="selectOpt(this, 'italienne')">B. italienne</button>
+                <button class="option-btn" onclick="selectOpt(this, 'italiens')">C. italiens</button>
+                <button class="option-btn" onclick="selectOpt(this, 'italie')">D. italie</button>
+            </div>
+            <div class="feedback-msg"></div>
+            <div class="auto-reveal-answer"><strong>Kunci Jawaban & Pembahasan:</strong> italienne (Féminin tunggal, merujuk pada Anna [perempuan]).</div>
+        </div>
+    </div>
+
+    <!-- Soal 9 -->
+    <div class="page" id="page-9" data-answer="égyptien">
+        <div class="p3-header">Latihan Bagian A — Soal 09</div>
+        <div class="p3-sub-header">The Dark Hour Challenge</div>
+        <div class="question-box">
+            <div class="question-title"><span class="flag-icon">🇪🇬</span> 9. Ahmed vient d'Égypte. Il est...</div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOpt(this, 'égyptienne')">A. égyptienne</button>
+                <button class="option-btn" onclick="selectOpt(this, 'égyptiens')">B. égyptiens</button>
+                <button class="option-btn" onclick="selectOpt(this, 'égyptien')">C. égyptien</button>
+                <button class="option-btn" onclick="selectOpt(this, 'égyptiennes')">D. égyptiennes</button>
+            </div>
+            <div class="feedback-msg"></div>
+            <div class="auto-reveal-answer"><strong>Kunci Jawaban & Pembahasan:</strong> égyptien (Maskulin tunggal, merujuk pada Ahmed [laki-laki]).</div>
+        </div>
+    </div>
+
+    <!-- Soal 10 -->
+    <div class="page" id="page-10" data-answer="américaine">
+        <div class="p3-header">Latihan Bagian A — Soal 10</div>
+        <div class="p3-sub-header">The Dark Hour Challenge</div>
+        <div class="question-box">
+            <div class="question-title"><span class="flag-icon">🇺🇸</span> 10. Emma est des États-Unis. Elle est...</div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOpt(this, 'américain')">A. américain</button>
+                <button class="option-btn" onclick="selectOpt(this, 'américains')">B. américains</button>
+                <button class="option-btn" onclick="selectOpt(this, 'américaines')">C. américaines</button>
+                <button class="option-btn" onclick="selectOpt(this, 'américaine')">D. américaine</button>
+            </div>
+            <div class="feedback-msg"></div>
+            <div class="auto-reveal-answer"><strong>Kunci Jawaban & Pembahasan:</strong> américaine (Féminin tunggal, merujuk pada Emma [perempuan]).</div>
+        </div>
+    </div>
+
+    <!-- Soal 11 -->
+    <div class="page" id="page-11" data-answer="brésilienne">
+        <div class="p3-header">Latihan Bagian B — Soal 11</div>
+        <div class="p3-sub-header">Féminin Transformation</div>
+        <div class="question-box">
+            <div class="question-title"><span class="flag-icon">🇧🇷</span> 11. Ubah ke bentuk feminin: <b>brésilien</b> ➔ ?</div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOpt(this, 'brésilien')">A. brésilien</button>
+                <button class="option-btn" onclick="selectOpt(this, 'brésilienne')">B. brésilienne</button>
+                <button class="option-btn" onclick="selectOpt(this, 'brésiliens')">C. brésiliens</button>
+                <button class="option-btn" onclick="selectOpt(this, 'brésiliennes')">D. brésiliennes</button>
+            </div>
+            <div class="feedback-msg"></div>
+            <div class="auto-reveal-answer"><strong>Kunci Jawaban & Pembahasan:</strong> brésilienne (-ien berubah menjadi -ienne).</div>
+        </div>
+    </div>
+
+    <!-- Soal 12 -->
+    <div class="page" id="page-12" data-answer="espagnole">
+        <div class="p3-header">Latihan Bagian B — Soal 12</div>
+        <div class="p3-sub-header">Féminin Transformation</div>
+        <div class="question-box">
+            <div class="question-title"><span class="flag-icon">🇪🇸</span> 12. Ubah ke bentuk feminin: <b>espagnol</b> ➔ ?</div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOpt(this, 'espagnol')">A. espagnol</button>
+                <button class="option-btn" onclick="selectOpt(this, 'espagnols')">B. espagnols</button>
+                <button class="option-btn" onclick="selectOpt(this, 'espagnole')">C. espagnole</button>
+                <button class="option-btn" onclick="selectOpt(this, 'espagnoles')">D. espagnoles</button>
+            </div>
+            <div class="feedback-msg"></div>
+            <div class="auto-reveal-answer"><strong>Kunci Jawaban & Pembahasan:</strong> espagnole (Pola tambah -e).</div>
+        </div>
+    </div>
+
+    <!-- Soal 13 -->
+    <div class="page" id="page-13" data-answer="suisse">
+        <div class="p3-header">Latihan Bagian B — Soal 13</div>
+        <div class="p3-sub-header">Féminin Transformation</div>
+        <div class="question-box">
+            <div class="question-title"><span class="flag-icon">🇨🇭</span> 13. Ubah ke bentuk feminin: <b>suisse</b> ➔ ?</div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOpt(this, 'suissen')">A. suissen</button>
+                <button class="option-btn" onclick="selectOpt(this, 'suisse')">B. suisse</button>
+                <button class="option-btn" onclick="selectOpt(this, 'suissa')">C. suissa</button>
+                <button class="option-btn" onclick="selectOpt(this, 'suisses')">D. suisses</button>
+            </div>
+            <div class="feedback-msg"></div>
+            <div class="auto-reveal-answer"><strong>Kunci Jawaban & Pembahasan:</strong> suisse (Sudah berakhiran -e, bentuk tetap sama).</div>
+        </div>
+    </div>
+
+    <!-- Soal 14 -->
+    <div class="page" id="page-14" data-answer="thaïlandaise">
+        <div class="p3-header">Latihan Bagian B — Soal 14</div>
+        <div class="p3-sub-header">Féminin Transformation</div>
+        <div class="question-box">
+            <div class="question-title"><span class="flag-icon">🇹🇭</span> 14. Ubah ke bentuk feminin: <b>thaïlandais</b> ➔ ?</div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOpt(this, 'thaïlandais')">A. thaïlandais</button>
+                <button class="option-btn" onclick="selectOpt(this, 'thaïlandaise')">B. thaïlandaise</button>
+                <button class="option-btn" onclick="selectOpt(this, 'thaïlandaiss')">C. thaïlandaiss</button>
+                <button class="option-btn" onclick="selectOpt(this, 'thaïlandaises')">D. thaïlandaises</button>
+            </div>
+            <div class="feedback-msg"></div>
+            <div class="auto-reveal-answer"><strong>Kunci Jawaban & Pembahasan:</strong> thaïlandaise (Pola -ais menjadi -aise).</div>
+        </div>
+    </div>
+
+    <!-- Soal 15 -->
+    <div class="page" id="page-15" data-answer="coréenne">
+        <div class="p3-header">Latihan Bagian B — Soal 15</div>
+        <div class="p3-sub-header">Féminin Transformation</div>
+        <div class="question-box">
+            <div class="question-title"><span class="flag-icon">🇰🇷</span> 15. Ubah ke bentuk feminin: <b>coréen</b> ➔ ?</div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOpt(this, 'coréen')">A. coréen</button>
+                <button class="option-btn" onclick="selectOpt(this, 'coréens')">B. coréens</button>
+                <button class="option-btn" onclick="selectOpt(this, 'coréenne')">C. coréenne</button>
+                <button class="option-btn" onclick="selectOpt(this, 'coréennes')">D. coréennes</button>
+            </div>
+            <div class="feedback-msg"></div>
+            <div class="auto-reveal-answer"><strong>Kunci Jawaban & Pembahasan:</strong> coréenne (Pola -éen menjadi -éenne).</div>
+        </div>
+    </div>
+
+    <!-- Soal 16 -->
+    <div class="page" id="page-16" data-answer="américaine">
+        <div class="p3-header">Latihan Bagian B — Soal 16</div>
+        <div class="p3-sub-header">Féminin Transformation</div>
+        <div class="question-box">
+            <div class="question-title"><span class="flag-icon">🇺🇸</span> 16. Ubah ke bentuk feminin: <b>américain</b> ➔ ?</div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOpt(this, 'américain')">A. américain</button>
+                <button class="option-btn" onclick="selectOpt(this, 'américaine')">B. américaine</button>
+                <button class="option-btn" onclick="selectOpt(this, 'américains')">C. américains</button>
+                <button class="option-btn" onclick="selectOpt(this, 'américainee')">D. américainee</button>
+            </div>
+            <div class="feedback-msg"></div>
+            <div class="auto-reveal-answer"><strong>Kunci Jawaban & Pembahasan:</strong> américaine (Pola -ain menjadi -aine).</div>
+        </div>
+    </div>
+
+    <!-- Soal 17 -->
+    <div class="page" id="page-17" data-answer="Elle est italienne.">
+        <div class="p3-header">Latihan Bagian C — Soal 17</div>
+        <div class="p3-sub-header">Translation Trial</div>
+        <div class="question-box">
+            <div class="question-title"><span class="flag-icon">🇮🇹👩</span> 17. Terjemahan ke bahasa Prancis: <br><i>"Dia (perempuan) orang Italia."</i></div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOpt(this, 'Il est italien.')">A. Il est italien.</button>
+                <button class="option-btn" onclick="selectOpt(this, 'Elle est italienne.')">B. Elle est italienne.</button>
+                <button class="option-btn" onclick="selectOpt(this, 'Elles sont italiennes.')">C. Elles sont italiennes.</button>
+                <button class="option-btn" onclick="selectOpt(this, 'Tu es italienne ?')">D. Tu es italienne ?</button>
+            </div>
+            <div class="feedback-msg"></div>
+            <div class="auto-reveal-answer"><strong>Kunci Jawaban & Pembahasan:</strong> Elle est italienne. (Subjek perempuan tunggal).</div>
+        </div>
+    </div>
+
+    <!-- Soal 18 -->
+    <div class="page" id="page-18" data-answer="Je suis indonésien.">
+        <div class="p3-header">Latihan Bagian C — Soal 18</div>
+        <div class="p3-sub-header">Translation Trial</div>
+        <div class="question-box">
+            <div class="question-title"><span class="flag-icon">🇮🇩👨</span> 18. Terjemahan ke bahasa Prancis: <br><i>"Saya (laki-laki) orang Indonesia."</i></div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOpt(this, 'Je suis indonésienne.')">A. Je suis indonésienne.</button>
+                <button class="option-btn" onclick="selectOpt(this, 'Il est indonésien.')">B. Il est indonésien.</button>
+                <button class="option-btn" onclick="selectOpt(this, 'Je suis indonésien.')">C. Je suis indonésien.</button>
+                <button class="option-btn" onclick="selectOpt(this, 'Tu es indonésien ?')">D. Tu es indonésien ?</button>
+            </div>
+            <div class="feedback-msg"></div>
+            <div class="auto-reveal-answer"><strong>Kunci Jawaban & Pembahasan:</strong> Je suis indonésien. (Maskulin untuk pembicara laki-laki).</div>
+        </div>
+    </div>
+
+    <!-- Soal 19 -->
+    <div class="page" id="page-19" data-answer="Ils sont allemands.">
+        <div class="p3-header">Latihan Bagian C — Soal 19</div>
+        <div class="p3-sub-header">Translation Trial</div>
+        <div class="question-box">
+            <div class="question-title"><span class="flag-icon">🇩🇪👨‍👨‍👦</span> 19. Terjemahan ke bahasa Prancis: <br><i>"Mereka (laki-laki) orang Jerman."</i></div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOpt(this, 'Elles sont allemandes.')">A. Elles sont allemandes.</button>
+                <button class="option-btn" onclick="selectOpt(this, 'Ils sont allemand.')">B. Ils sont allemand.</button>
+                <button class="option-btn" onclick="selectOpt(this, 'Ils sont allemands.')">C. Ils sont allemands.</button>
+                <button class="option-btn" onclick="selectOpt(this, 'Nous sommes allemands.')">D. Nous sommes allemands.</button>
+            </div>
+            <div class="feedback-msg"></div>
+            <div class="auto-reveal-answer"><strong>Kunci Jawaban & Pembahasan:</strong> Ils sont allemands. (Ils jamak maskulin).</div>
+        </div>
+    </div>
+
+    <!-- Soal 20 -->
+    <div class="page" id="page-20" data-answer="Mon amie est égyptienne.">
+        <div class="p3-header">Latihan Bagian C — Soal 20</div>
+        <div class="p3-sub-header">Translation Trial</div>
+        <div class="question-box">
+            <div class="question-title"><span class="flag-icon">🇪🇬👩‍🦰</span> 20. Terjemahan ke bahasa Prancis: <br><i>"Teman (perempuan) saya orang Mesir."</i></div>
+            <div class="options-grid">
+                <button class="option-btn" onclick="selectOpt(this, 'Mon ami est égyptien.')">A. Mon ami est égyptien.</button>
+                <button class="option-btn" onclick="selectOpt(this, 'Mon amie est égyptienne.')">B. Mon amie est égyptienne.</button>
+                <button class="option-btn" onclick="selectOpt(this, 'Ma copine est égyptien.')">C. Ma copine est égyptien.</button>
+                <button class="option-btn" onclick="selectOpt(this, 'Ton amie est égyptienne.')">D. Ton amie est égyptienne.</button>
+            </div>
+            <div class="feedback-msg"></div>
+            <div class="auto-reveal-answer"><strong>Kunci Jawaban & Pembahasan:</strong> Mon amie est égyptienne. (Amie feminin).</div>
+        </div>
+    </div>
+
+    <!-- NAVIGASI KONTROL BAWAH -->
+    <div class="nav-controls" id="nav-controls" style="display: none;">
+        <button class="nav-btn" id="prev-btn" onclick="changePage(-1)">◀ Sebelumnya</button>
+        <span class="page-counter" id="page-counter">Halaman 1 / 20</span>
+        <button class="nav-btn" id="next-btn" onclick="changePage(1)">Selanjutnya ▶</button>
+    </div>
+
+</div>
+
+<script>
+    let currentPage = 0;
+    const totalPages = 20;
+
+    function changePage(direction) {
+        const currentEl = document.getElementById(`page-${currentPage}`);
+        currentEl.classList.remove('active');
+
+        currentPage += direction;
+
+        if (currentPage < 0) currentPage = 0;
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        const nextEl = document.getElementById(`page-${currentPage}`);
+        if (nextEl) {
+            nextEl.classList.add('active');
+        }
+
+        const navControls = document.getElementById('nav-controls');
+        if (currentPage === 0) {
+            navControls.style.display = 'none';
+        } else {
+            navControls.style.display = 'flex';
+            document.getElementById('page-counter').textContent = `Halaman ${currentPage} / ${totalPages}`;
+            document.getElementById('prev-btn').disabled = (currentPage === 1);
+            document.getElementById('next-btn').disabled = (currentPage === totalPages);
+        }
+    }
+
+    function selectOpt(button, choice) {
+        const page = button.closest('.page');
+        const buttons = page.querySelectorAll('.option-btn');
+        const correctAnswer = page.dataset.answer;
+        const feedback = page.querySelector('.feedback-msg');
+        const revealAnswer = page.querySelector('.auto-reveal-answer');
+
+        // Nonaktifkan tombol pilihan setelah dipilih agar tidak bisa diubah-ubah
+        buttons.forEach(btn => btn.style.pointerEvents = 'none');
+        buttons.forEach(btn => btn.classList.remove('selected', 'correct', 'incorrect'));
+        button.classList.add('selected');
+
+        if (choice === correctAnswer) {
+            button.classList.add('correct');
+            feedback.style.color = '#22c55e';
+            feedback.textContent = 'Benar! 🎉';
+        } else {
+            button.classList.add('incorrect');
+            feedback.style.color = '#ef4444';
+            feedback.textContent = 'Kurang tepat. Cek kunci jawaban di bawah!';
+            
+            // Tandai jawaban yang benar secara otomatis
+            buttons.forEach(btn => {
+                if (btn.textContent.trim().slice(3) === correctAnswer || btn.textContent.trim() === correctAnswer) {
+                    btn.classList.add('correct');
+                }
+            });
+        }
+
+        // Kunci jawaban otomatis muncul setelah soal dijawab
+        revealAnswer.style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
